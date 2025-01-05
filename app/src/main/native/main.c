@@ -73,8 +73,38 @@ static void *timerHandler(__attribute__((unused)) void *data) {
     return 0;
 }
 
-static void pixelFlush(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map) {
-    // map to window buffer
+static void pixelFlush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map) {
+    uint32_t areaWidth = lv_area_get_width(area);
+    uint32_t areaHeight = lv_area_get_height(area);
+
+    int32_t left = LV_MAX(area->x1, 0);
+    int32_t top = LV_MAX(area->y1, 0);
+    int32_t right = LV_MIN(area->x2 + 1, areaWidth);
+    int32_t bottom = LV_MIN(area->y2 + 1, areaHeight);
+
+    ANativeWindow_Buffer buffer;
+    ANativeWindow_lock(nativeWindow, &buffer, 0);
+
+    int32_t width = LV_MIN(buffer.width, (right - left));
+    int32_t height = LV_MIN(buffer.height, (bottom - top));
+
+    uint32_t *out = (uint32_t *) buffer.bits;
+
+    for (int32_t y = 0; y < height; y++) {
+        for (int32_t x = 0; x < width; x++) {
+            uint8_t b = *(px_map++); // px_map[0] has blue color
+            uint8_t g = *(px_map++); // px_map[0] has green color
+            uint8_t r = *(px_map++); // px_map[0] has red color
+            uint8_t a = *(px_map++); // px_map[0] has alpha opacity
+
+            uint32_t pixel = (a << 24) | (b << 16) | (g << 8) | r;
+            out[x] = pixel;
+        }
+        out += buffer.stride;
+    }
+
+    ANativeWindow_unlockAndPost(nativeWindow);
+    lv_display_flush_ready(disp);
 }
 
 static void initLvgl(struct android_app *app) {
@@ -98,7 +128,8 @@ static void initLvgl(struct android_app *app) {
     uint32_t buf2[windowWidth * windowHeight * BYTE_PER_PIXEL];
     lv_display_set_buffers(display, buf1, buf2, sizeof(buf1), LV_DISPLAY_RENDER_MODE_FULL);
 
-    ANativeWindow_setBuffersGeometry(nativeWindow, windowWidth, windowHeight, WINDOW_FORMAT_RGBA_8888);
+    ANativeWindow_setBuffersGeometry(nativeWindow, windowWidth, windowHeight,
+                                     WINDOW_FORMAT_RGBA_8888);
 
     ANativeWindow_Buffer buffer;
     ANativeWindow_lock(nativeWindow, &buffer, 0);
