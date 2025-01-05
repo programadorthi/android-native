@@ -9,10 +9,20 @@
 
 bool hasWindow = false;
 
+static uint32_t currentTimeInMillis(void)
+{
+    struct timespec t;
+    clock_gettime(CLOCK_MONOTONIC, &t);
+    uint64_t timeMs = t.tv_sec * 1000 + (t.tv_nsec / 1000000);
+    return timeMs;
+}
+
 __attribute__((unused))
 void android_main(struct android_app* app)
 {
     lv_init();
+
+    lv_tick_set_cb(currentTimeInMillis);
 
     int *events = NULL;
     struct android_poll_source *source;
