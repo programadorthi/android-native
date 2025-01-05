@@ -7,6 +7,8 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
+#define BYTE_PER_PIXEL (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_ARGB8888))
+
 static pthread_t lvglTickThread;
 static bool ready = false;
 
@@ -88,6 +90,10 @@ static void initLvgl(struct android_app *app) {
     lv_display_t *display = lv_display_create(windowWidth, windowHeight);
     lv_display_set_dpi(display, dpi);
     lv_display_set_flush_cb(display, pixelFlush);
+
+    uint32_t buf1[windowWidth * windowHeight * BYTE_PER_PIXEL];
+    uint32_t buf2[windowWidth * windowHeight * BYTE_PER_PIXEL];
+    lv_display_set_buffers(display, buf1, buf2, sizeof(buf1), LV_DISPLAY_RENDER_MODE_FULL);
 
     ANativeWindow_setBuffersGeometry(app->window, windowWidth, windowHeight, WINDOW_FORMAT_RGBA_8888);
 
