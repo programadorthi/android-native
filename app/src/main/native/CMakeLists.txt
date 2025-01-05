@@ -29,6 +29,30 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
 set(CMAKE_SHARED_LINKER_FLAGS
         "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
 
+# ==== LVGL ====
+set(LVGL_ROOT_DIR ../../../../lvgl)
+
+# Option to define LV_LVGL_H_INCLUDE_SIMPLE, default: ON
+option(LV_LVGL_H_INCLUDE_SIMPLE
+        "Use #include \"lvgl.h\" instead of #include \"../../lvgl.h\"" ON)
+
+# Option to define LV_CONF_INCLUDE_SIMPLE, default: ON
+option(LV_CONF_INCLUDE_SIMPLE
+        "Use #include \"lv_conf.h\" instead of #include \"../../lv_conf.h\"" ON)
+
+file(GLOB_RECURSE SOURCES ${LVGL_ROOT_DIR}/src/*.c ${LVGL_ROOT_DIR}/src/*.S)
+
+# Build LVGL library
+add_library(lvgl ${SOURCES})
+add_library(lvgl::lvgl ALIAS lvgl)
+
+target_compile_definitions(
+        lvgl PUBLIC $<$<BOOL:${LV_LVGL_H_INCLUDE_SIMPLE}>:LV_LVGL_H_INCLUDE_SIMPLE>
+        $<$<BOOL:${LV_CONF_INCLUDE_SIMPLE}>:LV_CONF_INCLUDE_SIMPLE>)
+
+target_include_directories(lvgl PUBLIC ${LVGL_ROOT_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+# ==== LVGL ====
+
 add_library(${CMAKE_PROJECT_NAME} SHARED main.c)
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
@@ -38,4 +62,5 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_link_libraries(${CMAKE_PROJECT_NAME}
         android
         log
-        native_app_glue)
+        native_app_glue
+        lvgl)
