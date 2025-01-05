@@ -17,6 +17,8 @@ static void handleCmd(struct android_app *app, int32_t cmd);
 
 static void initLvgl(struct android_app *app);
 
+static void render();
+
 __attribute__((unused))
 void android_main(struct android_app *app) {
     lv_init();
@@ -136,5 +138,18 @@ static void initLvgl(struct android_app *app) {
     lv_memset(buffer.bits, 0xFF, buffer.stride * buffer.height * 4);
     ANativeWindow_unlockAndPost(nativeWindow);
 
+    render();
+
     pthread_create(&lvglTickThread, 0, timerHandler, 0);
+}
+
+static void render() {
+    /*Change the active screen's background color*/
+    lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x003a57), LV_PART_MAIN);
+
+    /*Create a white label, set its text and align it to the center*/
+    lv_obj_t * label = lv_label_create(lv_screen_active());
+    lv_label_set_text(label, "Hello world");
+    lv_obj_set_style_text_color(lv_screen_active(), lv_color_hex(0xffffff), LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 }
