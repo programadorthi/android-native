@@ -53,7 +53,6 @@ static void handleCmd(struct android_app *app, int32_t cmd) {
             break;
         default:
             // TODO: screen rotation font size not good
-            // TODO: screen rotation many times cause crashes. Memory allocations?
             break;
 
     }
@@ -160,6 +159,8 @@ static void render() {
 
     /*Create a white label, set its text and align it to the center*/
     lv_obj_t *label = lv_label_create(lv_screen_active());
+
+    // TODO: label circular animation is crashing after a while
     lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
     lv_obj_set_width(label, ANativeWindow_getWidth(nativeWindow));
     lv_label_set_text(label, "Lorem Ipsum is simply dummy text of the printing and typesetting industry");
