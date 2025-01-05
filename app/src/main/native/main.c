@@ -89,5 +89,12 @@ static void initLvgl(struct android_app *app) {
     lv_display_set_dpi(display, dpi);
     lv_display_set_flush_cb(display, pixelFlush);
 
+    ANativeWindow_setBuffersGeometry(app->window, windowWidth, windowHeight, WINDOW_FORMAT_RGBA_8888);
+
+    ANativeWindow_Buffer buffer;
+    ANativeWindow_lock(app->window, &buffer, 0);
+    lv_memset(buffer.bits, 0xFF, buffer.stride * buffer.height * 4);
+    ANativeWindow_unlockAndPost(app->window);
+
     pthread_create(&lvglTickThread, 0, timerHandler, 0);
 }
