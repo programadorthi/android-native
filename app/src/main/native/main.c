@@ -9,6 +9,7 @@
 
 #define BYTE_PER_PIXEL (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_ARGB8888))
 
+static ANativeWindow *nativeWindow;
 static pthread_t lvglTickThread;
 static bool ready = false;
 
@@ -77,6 +78,8 @@ static void pixelFlush(lv_display_t * disp, const lv_area_t * area, uint8_t * px
 }
 
 static void initLvgl(struct android_app *app) {
+    nativeWindow = app->window;
+
     lv_tick_set_cb(currentTimeInMillis);
 
     AConfiguration *config = AConfiguration_new();
@@ -84,8 +87,8 @@ static void initLvgl(struct android_app *app) {
     int32_t dpi = AConfiguration_getDensity(config);
     AConfiguration_delete(config);
 
-    int32_t windowWidth = ANativeWindow_getWidth(app->window);
-    int32_t windowHeight = ANativeWindow_getHeight(app->window);
+    int32_t windowWidth = ANativeWindow_getWidth(nativeWindow);
+    int32_t windowHeight = ANativeWindow_getHeight(nativeWindow);
 
     lv_display_t *display = lv_display_create(windowWidth, windowHeight);
     lv_display_set_dpi(display, dpi);
@@ -95,12 +98,12 @@ static void initLvgl(struct android_app *app) {
     uint32_t buf2[windowWidth * windowHeight * BYTE_PER_PIXEL];
     lv_display_set_buffers(display, buf1, buf2, sizeof(buf1), LV_DISPLAY_RENDER_MODE_FULL);
 
-    ANativeWindow_setBuffersGeometry(app->window, windowWidth, windowHeight, WINDOW_FORMAT_RGBA_8888);
+    ANativeWindow_setBuffersGeometry(nativeWindow, windowWidth, windowHeight, WINDOW_FORMAT_RGBA_8888);
 
     ANativeWindow_Buffer buffer;
-    ANativeWindow_lock(app->window, &buffer, 0);
+    ANativeWindow_lock(nativeWindow, &buffer, 0);
     lv_memset(buffer.bits, 0xFF, buffer.stride * buffer.height * 4);
-    ANativeWindow_unlockAndPost(app->window);
+    ANativeWindow_unlockAndPost(nativeWindow);
 
     pthread_create(&lvglTickThread, 0, timerHandler, 0);
 }
