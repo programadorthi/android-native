@@ -11,11 +11,6 @@ cmake_minimum_required(VERSION 3.22.1)
 # build script scope).
 project("nativeapplication")
 
-# Set C standard to C99
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF)
-
 # build native_app_glue as a static lib
 set(${CMAKE_C_FLAGS}, "${CMAKE_C_FLAGS}")
 add_library(native_app_glue STATIC
@@ -53,7 +48,7 @@ target_compile_definitions(
 target_include_directories(lvgl PUBLIC ${LVGL_ROOT_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 # ==== LVGL ====
 
-add_library(${CMAKE_PROJECT_NAME} SHARED main.c render.h render.c types.h)
+add_library(${CMAKE_PROJECT_NAME} SHARED main.c)
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
         ${ANDROID_NDK}/sources/android/native_app_glue)
