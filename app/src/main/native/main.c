@@ -70,8 +70,24 @@ static void *timerHandler(__attribute__((unused)) void *data) {
     return 0;
 }
 
+static void pixelFlush(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map) {
+    // map to window buffer
+}
+
 static void initLvgl(struct android_app *app) {
     lv_tick_set_cb(currentTimeInMillis);
+
+    AConfiguration *config = AConfiguration_new();
+    AConfiguration_fromAssetManager(config, app->activity->assetManager);
+    int32_t dpi = AConfiguration_getDensity(config);
+    AConfiguration_delete(config);
+
+    int32_t windowWidth = ANativeWindow_getWidth(app->window);
+    int32_t windowHeight = ANativeWindow_getHeight(app->window);
+
+    lv_display_t *display = lv_display_create(windowWidth, windowHeight);
+    lv_display_set_dpi(display, dpi);
+    lv_display_set_flush_cb(display, pixelFlush);
 
     pthread_create(&lvglTickThread, 0, timerHandler, 0);
 }
