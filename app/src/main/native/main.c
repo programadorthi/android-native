@@ -17,11 +17,17 @@
 /**********************
  *      TYPEDEFS
  **********************/
+struct touch_data_t {
+    bool pressed;
+    int32_t x;
+    int32_t y;
+};
 
 struct app_data_t {
+    bool running; // Flag to stop tick thread
     ANativeWindow *window;  // Android window object
     pthread_t tickThread; // Tick thread
-    bool running; // Flag to stop tick thread
+    struct touch_data_t touchData; // The touch state
 };
 
 /**********************
@@ -99,6 +105,16 @@ static void flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
     lv_display_flush_ready(disp);
 }
 
+static void input_read_cb(lv_indev_t *indev, lv_indev_data_t *data) {
+    struct app_data_t *appData = lv_indev_get_driver_data(indev);
+    LV_ASSERT_NULL(appData);
+
+    data->point.x = appData->touchData.x;
+    data->point.y = appData->touchData.y;
+
+    data->state = appData->touchData.pressed ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+}
+
 static void close_display(struct app_data_t *data) {
     data->running = false;
     void *ret = NULL;
@@ -124,6 +140,11 @@ static void open_display(struct app_data_t *data, int32_t dpi) {
     );
     lv_display_set_theme(display, theme);
 
+    lv_indev_t *input = lv_indev_create();
+    lv_indev_set_driver_data(input, data);
+    lv_indev_set_type(input, LV_INDEV_TYPE_POINTER);
+    lv_indev_set_read_cb(input, input_read_cb);
+
     render();
 
     data->running = true;
@@ -148,6 +169,15 @@ static void render() {
                       "Lorem Ipsum is simply dummy text of the printing and typesetting industry");
     lv_obj_set_style_text_color(display, lv_color_hex(0xffffff), LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+
+    lv_obj_t * btn = lv_button_create(lv_screen_active());     /*Add a button the current screen*/
+    lv_obj_align(btn, LV_ALIGN_CENTER, 0, -220);
+    lv_obj_set_size(btn, 240, 100);                          /*Set its size*/
+    //lv_obj_add_event_cb(btn, btn_event_cb, LV_EVENT_ALL, NULL);           /*Assign a callback to the button*/
+
+    lv_obj_t * btnLabel = lv_label_create(btn);          /*Add a label to the button*/
+    lv_label_set_text(btnLabel, "Button");                     /*Set the labels text*/
+    lv_obj_center(btnLabel);
 }
 
 /*static void lvgl_log_cb(lv_log_level_t level, const char *buf) {
@@ -201,6 +231,27 @@ static void handle_cmd(struct android_app *app, int32_t cmd) {
     }
 }
 
+int32_t handle_input(struct android_app *app, AInputEvent *event) {
+    struct app_data_t *data = (struct app_data_t *) app->userData;
+    LV_ASSERT_NULL(data);
+
+    int32_t source = AInputEvent_getSource(event);
+    int32_t action = AMotionEvent_getAction(event);
+    int32_t actionMasked = action & AMOTION_EVENT_ACTION_MASK;
+    int32_t ptrIndex = (action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK)
+            >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
+    bool isOnScreen = (source & AINPUT_SOURCE_TOUCHSCREEN) != 0;
+    float x = AMotionEvent_getX(event, ptrIndex);
+    float y = AMotionEvent_getY(event, ptrIndex);
+
+    data->touchData.x = (int32_t) x;
+    data->touchData.y = (int32_t) y;
+    data->touchData.pressed = actionMasked == AMOTION_EVENT_ACTION_DOWN ||
+                              actionMasked == AMOTION_EVENT_ACTION_POINTER_DOWN;
+
+    return isOnScreen;
+}
+
 __attribute__((unused))
 void android_main(struct android_app *app) {
     struct app_data_t app_data;
@@ -214,6 +265,7 @@ void android_main(struct android_app *app) {
 
     app->userData = &app_data;
     app->onAppCmd = handle_cmd;
+    app->onInputEvent = handle_input;
 
     int *events = NULL;
     struct android_poll_source *source = NULL;
