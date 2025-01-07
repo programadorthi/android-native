@@ -230,6 +230,12 @@ static void handle_cmd(struct android_app *app, int32_t cmd) {
 }
 
 int32_t handle_input(struct android_app *app, AInputEvent *event) {
+    size_t ptrCount = AMotionEvent_getPointerCount(event);
+    // Checking for multi-touch that is not supported
+    if (ptrCount != 1) {
+        return false;
+    }
+
     struct app_data_t *data = (struct app_data_t *) app->userData;
     LV_ASSERT_NULL(data);
 
