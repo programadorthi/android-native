@@ -48,7 +48,7 @@ target_compile_definitions(
 target_include_directories(lvgl PUBLIC ${LVGL_ROOT_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 # ==== LVGL ====
 
-add_library(${CMAKE_PROJECT_NAME} SHARED main.c)
+add_library(${CMAKE_PROJECT_NAME} SHARED main.c render.h render.c types.h)
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
         ${ANDROID_NDK}/sources/android/native_app_glue)
