@@ -10,10 +10,6 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
-// TODO: Dynamic buffer size based on W x H is not working on Andorid 25+
-// TODO: Implement dynamic buffer size based on device resolution to support res > 2048
-#define BUF_SIZE (2048 * 2048 * (LV_COLOR_DEPTH + 7) / 8)
-
 /**********************
  *      TYPEDEFS
  **********************/
@@ -28,14 +24,12 @@ struct app_data_t {
     ANativeWindow *window;  // Android window object
     pthread_t tickThread; // Tick thread
     struct touch_data_t touchData; // The touch state
+    uint8_t *buffer[2]; // Double buffering
 };
 
 /**********************
  *  STATIC VARIABLES
  **********************/
-// Double buffering
-static uint8_t buf1[BUF_SIZE];
-static uint8_t buf2[BUF_SIZE];
 
 /**********************
  *      MACROS
@@ -125,11 +119,15 @@ static void open_display(struct app_data_t *data, int32_t dpi) {
     int32_t hor_res = ANativeWindow_getWidth(data->window);
     int32_t ver_res = ANativeWindow_getHeight(data->window);
 
+    int32_t buf_size = hor_res * ver_res * (LV_COLOR_DEPTH + 7) / 8;
+    data->buffer[0] = lv_malloc(buf_size);
+    data->buffer[1] = lv_malloc(buf_size);
+
     lv_display_t *display = lv_display_create(hor_res, ver_res);
     lv_display_set_driver_data(display, data);
     lv_display_set_dpi(display, dpi);
     lv_display_set_flush_cb(display, flush_cb);
-    lv_display_set_buffers(display, buf1, buf2, BUF_SIZE, LV_DISPLAY_RENDER_MODE_FULL);
+    lv_display_set_buffers(display, data->buffer[0], data->buffer[1], buf_size, LV_DISPLAY_RENDER_MODE_FULL);
 
     lv_theme_t *theme = lv_theme_default_init(
             display,
