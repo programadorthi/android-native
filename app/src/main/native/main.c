@@ -46,7 +46,7 @@ static uint32_t currentTimeInMillis(void) {
 
 static void *refresh_routine(void *data) {
     struct app_data_t *app_data = data;
-    LV_ASSERT_NULL(app_data);
+    LV_ASSERT_NULL(app_data)
 
     while (app_data->running) {
         uint32_t timeUntilNext = lv_timer_handler();
@@ -58,7 +58,7 @@ static void *refresh_routine(void *data) {
 
 static void flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map) {
     struct app_data_t *data = lv_display_get_driver_data(disp);
-    LV_ASSERT_NULL(data);
+    LV_ASSERT_NULL(data)
 
     uint32_t areaWidth = lv_area_get_width(area);
     uint32_t areaHeight = lv_area_get_height(area);
@@ -96,7 +96,7 @@ static void flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
 
 static void input_read_cb(lv_indev_t *indev, lv_indev_data_t *data) {
     struct app_data_t *appData = lv_indev_get_driver_data(indev);
-    LV_ASSERT_NULL(appData);
+    LV_ASSERT_NULL(appData)
 
     data->point.x = appData->touchData.x;
     data->point.y = appData->touchData.y;
@@ -203,7 +203,7 @@ int32_t handle_input(struct android_app *app, AInputEvent *event) {
     }
 
     struct app_data_t *data = (struct app_data_t *) app->userData;
-    LV_ASSERT_NULL(data);
+    LV_ASSERT_NULL(data)
 
     int32_t source = AInputEvent_getSource(event);
     int32_t action = AMotionEvent_getAction(event);
