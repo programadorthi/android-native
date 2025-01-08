@@ -76,7 +76,7 @@ static void flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
 
     uint32_t *out = (uint32_t *) buffer.bits;
 
-    // TODO: There is a faster way to copy pixels? I don't know yet.
+    // TODO: Are there a faster way to copy pixels? I don't know yet.
     for (int32_t y = 0; y < height; y++) {
         for (int32_t x = 0; x < width; x++) {
             uint8_t b = *(px_map++); // px_map[0] has blue color
@@ -104,25 +104,72 @@ static void input_read_cb(lv_indev_t *indev, lv_indev_data_t *data) {
     data->state = appData->touchData.pressed ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
 }
 
-static void close_display(struct app_data_t *data) {
+static void destroy_display(struct app_data_t *data, int32_t format) {
     data->running = false;
     void *ret = NULL;
     pthread_join(data->tickThread, &ret);
+    ANativeWindow_setBuffersGeometry(
+            data->window,
+            ANativeWindow_getWidth(data->window),
+            ANativeWindow_getHeight(data->window),
+            format
+    );
+    lv_deinit();
 }
 
-static void open_display(struct app_data_t *data, int32_t dpi) {
-    int32_t hor_res = ANativeWindow_getWidth(data->window);
-    int32_t ver_res = ANativeWindow_getHeight(data->window);
+static void create_input(struct app_data_t *data) {
+    lv_indev_t *input = lv_indev_create();
+    lv_indev_set_driver_data(input, data);
+    lv_indev_set_type(input, LV_INDEV_TYPE_POINTER);
+    lv_indev_set_read_cb(input, input_read_cb);
+}
+
+static void setup_window(struct app_data_t *data, struct android_app *app) {
+    AConfiguration *config = AConfiguration_new();
+    AConfiguration_fromAssetManager(config, app->activity->assetManager);
+    int32_t dpi = AConfiguration_getDensity(config);
+    AConfiguration_delete(config);
+
+    ANativeWindow_setBuffersGeometry(
+            data->window,
+            ANativeWindow_getWidth(data->window),
+            ANativeWindow_getHeight(data->window),
+            WINDOW_FORMAT_RGBA_8888
+    );
+
+    lv_display_set_dpi(lv_display_get_default(), dpi);
+}
+
+static void create_display(struct android_app *app) {
+    struct app_data_t *data = (struct app_data_t *) app->userData;
+    LV_ASSERT_NULL(data)
+
+    int32_t hor_res = ANativeWindow_getWidth(app->window);
+    int32_t ver_res = ANativeWindow_getHeight(app->window);
+
+    data->window = app->window;
+
+    lv_init();
+    lv_tick_set_cb(currentTimeInMillis);
+
+    //lv_log_register_print_cb(lvgl_log_cb);
+
+    lv_display_t *display = lv_display_create(hor_res, ver_res);
+    lv_display_set_driver_data(display, data);
+    lv_display_set_flush_cb(display, flush_cb);
+
+    setup_window(data, app);
 
     int32_t buf_size = hor_res * ver_res * (LV_COLOR_DEPTH + 7) / 8;
     data->buffer[0] = lv_malloc(buf_size);
     data->buffer[1] = lv_malloc(buf_size);
-
-    lv_display_t *display = lv_display_create(hor_res, ver_res);
-    lv_display_set_driver_data(display, data);
-    lv_display_set_dpi(display, dpi);
-    lv_display_set_flush_cb(display, flush_cb);
-    lv_display_set_buffers(display, data->buffer[0], data->buffer[1], buf_size, LV_DISPLAY_RENDER_MODE_FULL);
+    lv_display_set_buffers(
+            display,
+            data->buffer[0],
+            data->buffer[1],
+            buf_size,
+            LV_DISPLAY_RENDER_MODE_FULL
+    );
 
     lv_theme_t *theme = lv_theme_default_init(
             display,
@@ -132,11 +179,6 @@ static void open_display(struct app_data_t *data, int32_t dpi) {
             LV_FONT_DEFAULT
     );
     lv_display_set_theme(display, theme);
-
-    lv_indev_t *input = lv_indev_create();
-    lv_indev_set_driver_data(input, data);
-    lv_indev_set_type(input, LV_INDEV_TYPE_POINTER);
-    lv_indev_set_read_cb(input, input_read_cb);
 
     render();
 
@@ -161,35 +203,19 @@ static void handle_cmd(struct android_app *app, int32_t cmd) {
 
     switch (cmd) {
         case APP_CMD_INIT_WINDOW:
-            data->window = app->window;
-
-            AConfiguration *config = AConfiguration_new();
-            AConfiguration_fromAssetManager(config, app->activity->assetManager);
-            int32_t dpi = AConfiguration_getDensity(config);
-            AConfiguration_delete(config);
-
-            format = ANativeWindow_getFormat(data->window);
-            ANativeWindow_setBuffersGeometry(
-                    data->window,
-                    ANativeWindow_getWidth(data->window),
-                    ANativeWindow_getHeight(data->window),
-                    WINDOW_FORMAT_RGBA_8888
-            );
-
-            open_display(data, dpi);
+            format = ANativeWindow_getFormat(app->window);
+            create_display(app);
+            create_input(data);
             break;
         case APP_CMD_TERM_WINDOW:
-            // FIXME: ANDROID <=26 call APP_CMD_TERM_WINDOW during screen rotation :/
-            close_display(data);
-            ANativeWindow_setBuffersGeometry(
-                    data->window,
-                    ANativeWindow_getWidth(data->window),
-                    ANativeWindow_getHeight(data->window),
-                    format
-            );
+            destroy_display(data, format);
+            break;
+        case APP_CMD_WINDOW_RESIZED:
+            destroy_display(data, format);
+            create_display(app);
+            create_input(data);
             break;
         default:
-            // TODO: screen rotation font size not good
             break;
 
     }
@@ -227,12 +253,6 @@ void android_main(struct android_app *app) {
     struct app_data_t app_data;
     lv_memzero(&app_data, sizeof(app_data));
 
-    lv_init();
-
-    //lv_log_register_print_cb(lvgl_log_cb);
-
-    lv_tick_set_cb(currentTimeInMillis);
-
     app->userData = &app_data;
     app->onAppCmd = handle_cmd;
     app->onInputEvent = handle_input;
@@ -250,6 +270,4 @@ void android_main(struct android_app *app) {
             source->process(app, source);
         }
     }
-
-    lv_deinit();
 }
