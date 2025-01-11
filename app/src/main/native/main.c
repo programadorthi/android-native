@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-
+#define CLAY_IMPLEMENTATION
 /*********************
  *      INCLUDES
  *********************/
@@ -193,6 +193,37 @@ static void create_display(struct android_app *app) {
         LOGI(">> LVGL: %s", buf);
     }
 }*/
+static void clay_error_handler(Clay_ErrorData errorText) {
+    LOGE(">> CLAY: %s", errorText.errorText.chars);
+}
+
+static inline Clay_Dimensions clay_measure_text(Clay_String *text, Clay_TextElementConfig *config) {
+    // Clay_TextElementConfig contains members such as fontId, fontSize, letterSpacing etc
+    // Note: Clay_String->chars is not guaranteed to be null terminated
+    return (Clay_Dimensions) {
+            .width = 0.0f,
+            .height = 0.0f
+    };
+}
+
+static void clay_initialize(struct app_data_t *data) {
+    // Note: malloc is only used here as an example, any allocator that provides
+    // a pointer to addressable memory of at least totalMemorySize will work
+    uint64_t totalMemorySize = Clay_MinMemorySize();
+    Clay_Arena arena = Clay_CreateArenaWithCapacityAndMemory(
+            totalMemorySize,
+            lv_malloc(totalMemorySize)
+    );
+    Clay_Initialize(arena, (Clay_Dimensions) {
+            .width = (float) ANativeWindow_getWidth(data->window),
+            .height = (float) ANativeWindow_getHeight(data->window)
+    }, (Clay_ErrorHandler) {
+            .errorHandlerFunction = clay_error_handler
+    });
+
+    // Tell clay how to measure text
+    Clay_SetMeasureTextFunction(clay_measure_text);
+}
 
 /**********************
  *   ANDROID FUNCTIONS
@@ -206,6 +237,7 @@ static void handle_cmd(struct android_app *app, int32_t cmd) {
             format = ANativeWindow_getFormat(app->window);
             create_display(app);
             create_input(data);
+            clay_initialize(data);
             break;
         case APP_CMD_TERM_WINDOW:
             destroy_display(data, format);
