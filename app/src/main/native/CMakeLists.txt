@@ -48,6 +48,18 @@ target_compile_definitions(
 target_include_directories(lvgl PUBLIC ${LVGL_ROOT_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 # ==== LVGL ====
 
+# ==== CLAY ====
+set(CLAY_ROOT_DIR ../../../../clay)
+
+file(GLOB_RECURSE SOURCES ${CLAY_ROOT_DIR}/*.h)
+
+add_library(clay ${SOURCES})
+
+set_target_properties(clay PROPERTIES LINKER_LANGUAGE C)
+
+target_include_directories(clay PUBLIC ${CLAY_ROOT_DIR})
+# ==== CLAY ====
+
 add_library(${CMAKE_PROJECT_NAME} SHARED main.c render.h render.c types.h)
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
@@ -58,19 +70,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         android
         log
         native_app_glue
-        lvgl)
-
-# ==== LVGL DEMOS ====
-set(LV_ENABLE_DEMOS OFF)
-
-file(GLOB_RECURSE DEMO_SOURCES ${LVGL_ROOT_DIR}/demos/*.c)
-
-IF (LV_ENABLE_DEMOS)
-    add_library(lvgl_demos ${DEMO_SOURCES})
-    add_library(lvgl::demos ALIAS lvgl_demos)
-
-    target_include_directories(lvgl_demos SYSTEM PUBLIC ${LVGL_ROOT_DIR}/demos)
-    target_link_libraries(lvgl_demos PUBLIC lvgl)
-    target_link_libraries(${CMAKE_PROJECT_NAME} lvgl_demos)
-endif ()
-# ==== LVGL DEMOS ====
+        lvgl
+        clay)
