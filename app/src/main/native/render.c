@@ -9,7 +9,6 @@
 
 #include <android/native_window.h>
 #include "lvgl.h"
-#include "types.h"
 #include "render.h"
 #include "layout.h"
 
@@ -39,7 +38,7 @@ static lv_color_t clay_color_to_lv_color(Clay_Color color);
  *   GLOBAL FUNCTIONS
  **********************/
 
-void render() {
+void render(lv_obj_t *canvas) {
     Clay_BeginLayout();
 
     layout();
@@ -69,20 +68,26 @@ void render() {
             case CLAY_RENDER_COMMAND_TYPE_RECTANGLE: {
                 Clay_RectangleElementConfig *config = renderCommand->config.rectangleElementConfig;
 
-                static lv_style_t style;
-                lv_style_init(&style);
-                lv_style_set_x(&style, (int32_t) boundingBox.x);
-                lv_style_set_y(&style, (int32_t) boundingBox.y);
-                lv_style_set_width(&style, (int32_t) boundingBox.width);
-                lv_style_set_height(&style, (int32_t) boundingBox.height);
-                lv_style_set_bg_color(&style, clay_color_to_lv_color(config->color));
-                lv_style_set_bg_opa(&style, (uint8_t) config->color.a);
+                lv_layer_t layer;
+                lv_canvas_init_layer(canvas, &layer);
 
-                // TODO: add support to each border radius
-                lv_style_set_radius(&style, (int32_t) config->cornerRadius.topLeft);
+                lv_draw_rect_dsc_t rect;
+                lv_draw_rect_dsc_init(&rect);
+                rect.bg_color = clay_color_to_lv_color(config->color);
+                rect.bg_opa = (uint8_t) config->color.a;
+                rect.radius = (int32_t) config->cornerRadius.topLeft;
 
-                lv_obj_t *obj = lv_obj_create(lv_screen_active());
-                lv_obj_add_style(obj, &style, 0);
+                lv_area_t coords = {
+                        .x1 = (int32_t) boundingBox.x,
+                        .y1 = (int32_t) boundingBox.y,
+                        // FIXME: Clay is removing double padding from width and height
+                        .x2 = (int32_t) (boundingBox.width + boundingBox.x),
+                        .y2 = (int32_t) (boundingBox.height + boundingBox.y)
+                };
+
+                lv_draw_rect(&layer, &rect, &coords);
+
+                lv_canvas_finish_layer(canvas, &layer);
                 break;
             }
             case CLAY_RENDER_COMMAND_TYPE_BORDER: {

@@ -15,6 +15,7 @@ extern "C" {
  *********************/
 
 #include "clay.h"
+#include "lvgl.h"
 
 /*********************
  *      DEFINES
@@ -31,7 +32,7 @@ extern "C" {
 /**
  * The layout entrypoint called by the main
  */
-void render();
+void render(lv_obj_t *canvas);
 
 /**********************
  *      MACROS

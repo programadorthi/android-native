@@ -36,22 +36,31 @@
 void layout() {
     CLAY(
             CLAY_ID("OuterContainer"),
-            CLAY_RECTANGLE(
-                    {
-                            .color = {255, 0, .0, 255},
-                            .cornerRadius = (Clay_CornerRadius) {
-                                    .topLeft = 5,
-                                    .topRight = 6,
-                                    .bottomLeft = 7,
-                                    .bottomRight = 8
-                            }
-                    }
-            ), CLAY_LAYOUT((Clay_LayoutConfig) {
-            .sizing = {
-                    .width = CLAY_SIZING_GROW(),
-                    .height = CLAY_SIZING_GROW()
-            }
-    })) {}
+            CLAY_RECTANGLE({.color = {.r = 43, .g = 41, .b = 51, .a = 255}}),
+            CLAY_LAYOUT((Clay_LayoutConfig) {
+                    .layoutDirection = CLAY_TOP_TO_BOTTOM,
+                    .sizing = {
+                            .width = CLAY_SIZING_GROW(),
+                            .height = CLAY_SIZING_GROW()
+                    },
+                    .padding = {16, 16}
+            })
+    ) {
+        CLAY(
+                CLAY_ID("HeaderBar"),
+                CLAY_RECTANGLE({
+                                       .color = {.r = 90, .g = 90, .b = 90, .a = 255},
+                                       .cornerRadius = 40
+                               }),
+                CLAY_LAYOUT((Clay_LayoutConfig) {
+                        .sizing = {
+                                .width = CLAY_SIZING_GROW(),
+                                .height = CLAY_SIZING_PERCENT(0.1)
+                        }
+                })
+        ) {}
+        CLAY(CLAY_ID("LowerContent")) {}
+    }
 }
 
 /**********************

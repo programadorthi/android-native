@@ -48,8 +48,26 @@ static void *refresh_routine(void *data) {
     struct app_data_t *app_data = data;
     LV_ASSERT_NULL(app_data)
 
+    int32_t width = ANativeWindow_getWidth(app_data->window);
+    int32_t height = ANativeWindow_getHeight(app_data->window);
+
+    // Update internal layout dimensions
+    Clay_SetLayoutDimensions((Clay_Dimensions) {
+            .width = (float) width,
+            .height = (float) height
+    });
+
+    lv_draw_buf_t *buf = lv_draw_buf_create(
+            width,
+            height,
+            LV_COLOR_FORMAT_XRGB8888,
+            0
+    );
+    lv_obj_t *canvas = lv_canvas_create(lv_screen_active());
+    lv_canvas_set_draw_buf(canvas, buf);
+
     while (app_data->running) {
-        render();
+        render(canvas);
         uint32_t timeUntilNext = lv_timer_handler();
         lv_delay_ms(timeUntilNext);
     }
@@ -141,6 +159,14 @@ static void setup_window(struct app_data_t *data, struct android_app *app) {
     lv_display_set_dpi(lv_display_get_default(), dpi);
 }
 
+/*static void lvgl_log_cb(lv_log_level_t level, const char *buf) {
+    if (level == LV_LOG_LEVEL_ERROR) {
+        LOGE(">> LVGL: %s", buf);
+    } else {
+        LOGI(">> LVGL: %s", buf);
+    }
+}*/
+
 static void create_display(struct android_app *app) {
     struct app_data_t *data = (struct app_data_t *) app->userData;
     LV_ASSERT_NULL(data)
@@ -184,14 +210,6 @@ static void create_display(struct android_app *app) {
     data->running = true;
     pthread_create(&data->tickThread, NULL, refresh_routine, data);
 }
-
-/*static void lvgl_log_cb(lv_log_level_t level, const char *buf) {
-    if (level == LV_LOG_LEVEL_ERROR) {
-        LOGE(">> LVGL: %s", buf);
-    } else {
-        LOGI(">> LVGL: %s", buf);
-    }
-}*/
 
 static void clay_error_handler(Clay_ErrorData errorText) {
     LOGE(">> CLAY: %s", errorText.errorText.chars);
@@ -246,11 +264,6 @@ static void handle_cmd(struct android_app *app, int32_t cmd) {
             destroy_display(data, format);
             create_display(app);
             create_input(data);
-            // Update internal layout dimensions
-            Clay_SetLayoutDimensions((Clay_Dimensions) {
-                    .width = (float) ANativeWindow_getWidth(data->window),
-                    .height = (float) ANativeWindow_getHeight(data->window)
-            });
             break;
         default:
             break;
