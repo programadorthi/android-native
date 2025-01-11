@@ -246,6 +246,11 @@ static void handle_cmd(struct android_app *app, int32_t cmd) {
             destroy_display(data, format);
             create_display(app);
             create_input(data);
+            // Update internal layout dimensions
+            Clay_SetLayoutDimensions((Clay_Dimensions) {
+                    .width = (float) ANativeWindow_getWidth(data->window),
+                    .height = (float) ANativeWindow_getHeight(data->window)
+            });
             break;
         default:
             break;
