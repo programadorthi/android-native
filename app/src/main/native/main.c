@@ -49,6 +49,7 @@ static void *refresh_routine(void *data) {
     LV_ASSERT_NULL(app_data)
 
     while (app_data->running) {
+        render();
         uint32_t timeUntilNext = lv_timer_handler();
         lv_delay_ms(timeUntilNext);
     }
@@ -180,8 +181,6 @@ static void create_display(struct android_app *app) {
     );
     lv_display_set_theme(display, theme);
 
-    render();
-
     data->running = true;
     pthread_create(&data->tickThread, NULL, refresh_routine, data);
 }
@@ -193,6 +192,7 @@ static void create_display(struct android_app *app) {
         LOGI(">> LVGL: %s", buf);
     }
 }*/
+
 static void clay_error_handler(Clay_ErrorData errorText) {
     LOGE(">> CLAY: %s", errorText.errorText.chars);
 }

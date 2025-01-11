@@ -60,7 +60,7 @@ set_target_properties(clay PROPERTIES LINKER_LANGUAGE C)
 target_include_directories(clay PUBLIC ${CLAY_ROOT_DIR})
 # ==== CLAY ====
 
-add_library(${CMAKE_PROJECT_NAME} SHARED main.c render.h render.c types.h)
+add_library(${CMAKE_PROJECT_NAME} SHARED main.c layout.h layout.c render.h render.c types.h)
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
         ${ANDROID_NDK}/sources/android/native_app_glue)
