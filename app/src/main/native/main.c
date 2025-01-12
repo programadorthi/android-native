@@ -218,9 +218,33 @@ static void clay_error_handler(Clay_ErrorData errorText) {
 static inline Clay_Dimensions clay_measure_text(Clay_String *text, Clay_TextElementConfig *config) {
     // Clay_TextElementConfig contains members such as fontId, fontSize, letterSpacing etc
     // Note: Clay_String->chars is not guaranteed to be null terminated
+    int32_t textWidth = lv_text_get_width(text->chars, text->length, lv_font_default(),
+                                          config->letterSpacing);
+    lv_point_t result = {0, 0};
+    lv_text_flag_t flag;
+    switch (config->wrapMode) {
+        case CLAY_TEXT_WRAP_WORDS:
+            flag = LV_TEXT_FLAG_BREAK_ALL;
+            break;
+        case CLAY_TEXT_WRAP_NEWLINES:
+            flag = LV_TEXT_FLAG_FIT;
+            break;
+        case CLAY_TEXT_WRAP_NONE:
+            flag = LV_TEXT_FLAG_NONE;
+            break;
+    }
+    lv_text_get_size(
+            &result,
+            text->chars,
+            lv_font_default(),
+            config->letterSpacing,
+            config->lineHeight,
+            textWidth,
+            flag
+    );
     return (Clay_Dimensions) {
-            .width = 0.0f,
-            .height = 0.0f
+            .width = (float) result.x,
+            .height = (float) result.y
     };
 }
 
