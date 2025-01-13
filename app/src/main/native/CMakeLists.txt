@@ -59,3 +59,18 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         log
         native_app_glue
         lvgl)
+
+# ==== LVGL DEMOS ====
+set(LV_ENABLE_DEMOS OFF)
+
+file(GLOB_RECURSE DEMO_SOURCES ${LVGL_ROOT_DIR}/demos/*.c)
+
+IF (LV_ENABLE_DEMOS)
+    add_library(lvgl_demos ${DEMO_SOURCES})
+    add_library(lvgl::demos ALIAS lvgl_demos)
+
+    target_include_directories(lvgl_demos SYSTEM PUBLIC ${LVGL_ROOT_DIR}/demos)
+    target_link_libraries(lvgl_demos PUBLIC lvgl)
+    target_link_libraries(${CMAKE_PROJECT_NAME} lvgl_demos)
+endif ()
+# ==== LVGL DEMOS ====
