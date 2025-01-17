@@ -1,27 +1,16 @@
-# Android Native with LVGL
+# Android Native with CLAY
 
-LVGL is an embedded graphics library to create beautiful UIs for any MCU, MPU and display type. Mobile phone display is not a main target.
+Clay (short for C Layout) is a high performance 2D UI layout library.
 
-Checkout the official site [LVGL](https://lvgl.io/) for more info and demos.
-
-## Music demo
-
-Below you can see the demo music "working" on Android Emulator:
-
-To run yourself:
-1. Enable `LV_ENABLE_DEMOS` flag on CMakeLists.txt
-2. Open `lv_conf.h` and enable `LV_USE_DEMO_MUSIC`, `LV_DEMO_MUSIC_LARGE` and `LV_DEMO_MUSIC_AUTO_PLAY` from `0` to `1`
-3. On `lv_conf.h` enable `LV_FONT_MONTSERRAT_22` and `LV_FONT_MONTSERRAT_32` from `0` to `1`
-4. Now you can build and run
-
-Screenshots
------------
-<img src="demo.gif" alt="Screenshot">
+Checkout the official [site](https://www.nicbarker.com/clay) or [repository](https://github.com/nicbarker/clay) for more info and demos.
 
 ## Features
 
-- [x] Draw widgets
-- [x] Touch clickable widgets
-- [ ] Scroll widgets
-- [ ] Load asserts (images, fonts, etc)
+> Clay draw nothing. It has abstraction only. You need something to draw the components as a canvas. Here I'm using LVGL Canvas.
+
+- [ ] Draw rectangles using LVGL canvas rect (in progress)
+- [ ] Text measure using LVGL Text (in progress)
+- [ ] Text rendering using LVGL canvas label
+- [ ] Image rendering using LVGL canvas
+- [ ] Border rendering using LVGL canvas
 - [ ] Screen rotation with state restoration
