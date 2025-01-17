@@ -1,19 +1,27 @@
-# Android Native
+# Android Native with LVGL
 
-A basic template project for people that want skip Java or Kotlin as must as possible.
+LVGL is an embedded graphics library to create beautiful UIs for any MCU, MPU and display type. Mobile phone display is not a main target.
 
-There is a build by Gradle but is to have a easily integration with NDK and CMake. It takes seconds or milliseconds because don't have to download dependencies or compile Java/Kotlin code.
+Checkout the official site [LVGL](https://lvgl.io/) for more info and demos.
 
-> Yes, I know that even a hello world Gradle project is fast. But until you finish the first sync it will take minutes 🙆‍♂️. 
+## Music demo
 
-But there is a script if you want to avoid Gradle. Manual script don't requires you have a folder structure as used by default Gradle Android projects.
+Below you can see the demo music "working" on Android Emulator:
 
-## About UI
+To run yourself:
+1. Enable `LV_ENABLE_DEMOS` flag on CMakeLists.txt
+2. Open `lv_conf.h` and enable `LV_USE_DEMO_MUSIC`, `LV_DEMO_MUSIC_LARGE` and `LV_DEMO_MUSIC_AUTO_PLAY` from `0` to `1`
+3. On `lv_conf.h` enable `LV_FONT_MONTSERRAT_22` and `LV_FONT_MONTSERRAT_32` from `0` to `1`
+4. Now you can build and run
 
-Until now I saw that developing UI using NDK is not an easy task. There are some C libraries to develop UI: [LVGL](https://lvgl.io/), [Raylib](https://www.raylib.com/index.html) and [clay](https://github.com/nicbarker/clay).
+Screenshots
+-----------
+<img src="demo.gif" alt="Screenshot">
 
-Raylib is more related to game development and I'll use it in the future maybe.
+## Features
 
-I'm using LVGL because is more related to a GUI framework and have support to themes, styles and a lot of widgets ready to use. You can see it working in the branch [lvgl](https://github.com/programadorthi/android-native/tree/lvgl).
-
-Clay is a new project. It brings features that you find in composition layout like React, Vue, Compose Multiplatform, etc. You can see it working in the branch [clay-lvgl](https://github.com/programadorthi/android-native/tree/clay-lvgl).
+[x] - Draw widgets
+[x] - Touch clickable widgets
+[ ] - Scroll widgets
+[ ] - Load asserts (images, fonts, etc)
+[ ] - Screen rotation with state restoration
