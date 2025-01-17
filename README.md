@@ -20,8 +20,8 @@ Screenshots
 
 ## Features
 
-[x] - Draw widgets
-[x] - Touch clickable widgets
-[ ] - Scroll widgets
-[ ] - Load asserts (images, fonts, etc)
-[ ] - Screen rotation with state restoration
+- [x] Draw widgets
+- [x] Touch clickable widgets
+- [ ] Scroll widgets
+- [ ] Load asserts (images, fonts, etc)
+- [ ] Screen rotation with state restoration
