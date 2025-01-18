@@ -22,6 +22,7 @@ Screenshots
 
 - [x] Draw widgets
 - [x] Touch clickable widgets
-- [ ] Scroll widgets
+- [x] Scroll widgets
+- [ ] Safe Area (status bar, system bar)
 - [ ] Load asserts (images, fonts, etc)
 - [ ] Screen rotation with state restoration
