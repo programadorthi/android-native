@@ -140,6 +140,14 @@ static void setup_window(struct app_data_t *data, struct android_app *app) {
     lv_display_set_dpi(lv_display_get_default(), dpi);
 }
 
+/*static void lvgl_log_cb(lv_log_level_t level, const char *buf) {
+    if (level == LV_LOG_LEVEL_ERROR) {
+        LOGE(">> LVGL: %s", buf);
+    } else {
+        LOGI(">> LVGL: %s", buf);
+    }
+}*/
+
 static void create_display(struct android_app *app) {
     struct app_data_t *data = (struct app_data_t *) app->userData;
     LV_ASSERT_NULL(data)
@@ -185,14 +193,6 @@ static void create_display(struct android_app *app) {
     data->running = true;
     pthread_create(&data->tickThread, NULL, refresh_routine, data);
 }
-
-/*static void lvgl_log_cb(lv_log_level_t level, const char *buf) {
-    if (level == LV_LOG_LEVEL_ERROR) {
-        LOGE(">> LVGL: %s", buf);
-    } else {
-        LOGI(">> LVGL: %s", buf);
-    }
-}*/
 
 /**********************
  *   ANDROID FUNCTIONS
@@ -243,7 +243,8 @@ int32_t handle_input(struct android_app *app, AInputEvent *event) {
     data->touchData.x = (int32_t) x;
     data->touchData.y = (int32_t) y;
     data->touchData.pressed = actionMasked == AMOTION_EVENT_ACTION_DOWN ||
-                              actionMasked == AMOTION_EVENT_ACTION_POINTER_DOWN;
+                              actionMasked == AMOTION_EVENT_ACTION_POINTER_DOWN ||
+                              actionMasked == AMOTION_EVENT_ACTION_MOVE;
 
     return isOnScreen;
 }
