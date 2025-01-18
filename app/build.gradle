@@ -31,3 +31,7 @@ android {
         }
     }
 }
+
+tasks.named("clean").configure {
+    delete(layout.projectDirectory.dir(".cxx"))
+}
