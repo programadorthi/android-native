@@ -8,6 +8,7 @@ pluginManagement {
 dependencyResolutionManagement {
     repositories {
         google()
+        mavenCentral() // God, Java androidx modules still needing Kotlin :(
     }
 }
 

@@ -7,9 +7,7 @@
  *      INCLUDES
  *********************/
 
-#include <android/native_window.h>
 #include "lvgl.h"
-#include "types.h"
 #include "render.h"
 
 #if LV_USE_DEMO_MUSIC

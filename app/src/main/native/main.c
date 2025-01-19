@@ -29,6 +29,11 @@
  *  STATIC VARIABLES
  **********************/
 
+static int32_t insetsLeft;
+static int32_t insetsTop;
+static int32_t insetsRight;
+static int32_t insetsBottom;
+
 /**********************
  *      MACROS
  **********************/
@@ -160,11 +165,16 @@ static void create_display(struct android_app *app) {
     lv_init();
     lv_tick_set_cb(currentTimeInMillis);
 
-    //lv_log_register_print_cb(lvgl_log_cb);
+//    lv_log_register_print_cb(lvgl_log_cb);
 
     lv_display_t *display = lv_display_create(hor_res, ver_res);
     lv_display_set_driver_data(display, data);
     lv_display_set_flush_cb(display, flush_cb);
+
+    lv_obj_set_style_pad_left(lv_screen_active(), insetsLeft, 0);
+    lv_obj_set_style_pad_top(lv_screen_active(), insetsTop, 0);
+    lv_obj_set_style_pad_right(lv_screen_active(), insetsRight, 0);
+    lv_obj_set_style_pad_bottom(lv_screen_active(), insetsBottom, 0);
 
     setup_window(data, app);
 
@@ -271,4 +281,16 @@ void android_main(struct android_app *app) {
             source->process(app, source);
         }
     }
+}
+
+JNIEXPORT void JNICALL
+Java_dev_programadorthi_activity_MainActivity_notifyInsets(JNIEnv *env, jclass clazz, jint left,
+                                                           jint top, jint right, jint bottom) {
+    LV_UNUSED(env);
+    LV_UNUSED(clazz);
+
+    insetsLeft = left;
+    insetsTop = top;
+    insetsRight = right;
+    insetsBottom = bottom;
 }
