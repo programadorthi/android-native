@@ -32,6 +32,20 @@ android {
     }
 }
 
+dependencies {
+    // God is almost impossible code on Android without Androidx libraries
+    implementation("androidx.core:core:1.15.0") {
+        exclude group: "androidx.collection"
+        exclude group: "androidx.lifecycle"
+    }
+
+    implementation("androidx.activity:activity:1.10.0") {
+        exclude group: "androidx.collection"
+        exclude group: "androidx.lifecycle"
+        exclude module: "core-ktx"
+    }
+}
+
 tasks.named("clean").configure {
     delete(layout.projectDirectory.dir(".cxx"))
 }
