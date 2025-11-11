@@ -12,6 +12,15 @@ android {
         targetSdk 36
         versionCode 1
         versionName "1.0"
+
+        // Give to CMake the name of the library
+        externalNativeBuild {
+            cmake {
+                arguments "-DPLATFORM=Android",
+                        "-DBUILD_EXAMPLES=OFF",
+                        "-DGL_VERSION=ES30"
+            }
+        }
     }
 
     buildTypes {

@@ -1,0 +1,3 @@
+[submodule "app/src/main/native/raylib"]
+	path = app/src/main/native/raylib
+	url = https://github.com/raysan5/raylib.git

@@ -15,27 +15,36 @@ project("nativeapplication")
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
-
-# build native_app_glue as a static lib
 set(${CMAKE_C_FLAGS}, "${CMAKE_C_FLAGS}")
-add_library(native_app_glue STATIC
-        ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
-
-# now build app's shared lib
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
-
 # Export ANativeActivity_onCreate(),
 # Refer to: https://github.com/android-ndk/ndk/issues/381.
 set(CMAKE_SHARED_LINKER_FLAGS
         "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
 
-add_library(${CMAKE_PROJECT_NAME} SHARED main.c)
+# Include raylib as a subdirectories
+add_subdirectory(${CMAKE_SOURCE_DIR}/raylib)
 
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-        ${ANDROID_NDK}/sources/android/native_app_glue)
+# Fetch all source files for your project (recursively), excluding 'raylib' source files
+file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/*.c")
+list(FILTER SOURCES EXCLUDE REGEX "${CMAKE_SOURCE_DIR}/raylib/.*")
+
+# Add headers directory for android_native_app_glue.c
+include_directories(${ANDROID_NDK}/sources/android/native_app_glue/)
+
+# Add android_native_app_glue.c to the source files
+list(APPEND SOURCES ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
+
+# Create a shared library with game source files
+add_library(${CMAKE_PROJECT_NAME} SHARED ${SOURCES})
+
+# Define compiler macros for the library
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE PLATFORM_ANDROID)
+
+# Include raylib header files
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/raylib")
 
 # add lib dependencies
 target_link_libraries(${CMAKE_PROJECT_NAME}
         android
         log
-        native_app_glue)
+        raylib)
