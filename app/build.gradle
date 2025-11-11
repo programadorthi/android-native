@@ -1,15 +1,15 @@
 plugins {
-    id "com.android.application" version "8.7.3"
+    id "com.android.application" version "8.13.1"
 }
 
 android {
     namespace 'dev.programadorthi.nativeapplication'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId "dev.programadorthi.nativeapplication"
         minSdk 24
-        targetSdk 35
+        targetSdk 36
         versionCode 1
         versionName "1.0"
     }
