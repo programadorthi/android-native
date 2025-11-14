@@ -11,13 +11,14 @@ cmake_minimum_required(VERSION 3.22.1)
 # build script scope).
 project("nativeapplication")
 
+# Set C standard to C99
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
 # build native_app_glue as a static lib
 set(${CMAKE_C_FLAGS}, "${CMAKE_C_FLAGS}")
-add_library(native_app_glue STATIC
-        ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
-
 # now build app's shared lib
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
 
 # Export ANativeActivity_onCreate(),
 # Refer to: https://github.com/android-ndk/ndk/issues/381.
@@ -25,28 +26,14 @@ set(CMAKE_SHARED_LINKER_FLAGS
         "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
 
 # ==== LVGL ====
-set(LVGL_ROOT_DIR ../../../../lvgl)
-
-# Option to define LV_LVGL_H_INCLUDE_SIMPLE, default: ON
-option(LV_LVGL_H_INCLUDE_SIMPLE
-        "Use #include \"lvgl.h\" instead of #include \"../../lvgl.h\"" ON)
-
-# Option to define LV_CONF_INCLUDE_SIMPLE, default: ON
-option(LV_CONF_INCLUDE_SIMPLE
-        "Use #include \"lv_conf.h\" instead of #include \"../../lv_conf.h\"" ON)
-
-file(GLOB_RECURSE SOURCES ${LVGL_ROOT_DIR}/src/*.c ${LVGL_ROOT_DIR}/src/*.S)
-
-# Build LVGL library
-add_library(lvgl ${SOURCES})
-add_library(lvgl::lvgl ALIAS lvgl)
-
-target_compile_definitions(
-        lvgl PUBLIC $<$<BOOL:${LV_LVGL_H_INCLUDE_SIMPLE}>:LV_LVGL_H_INCLUDE_SIMPLE>
-        $<$<BOOL:${LV_CONF_INCLUDE_SIMPLE}>:LV_CONF_INCLUDE_SIMPLE>)
-
-target_include_directories(lvgl PUBLIC ${LVGL_ROOT_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+set(LV_BUILD_CONF_PATH ${CMAKE_SOURCE_DIR}/lv_conf.h)
+set(CONFIG_LV_BUILD_DEMOS OFF)
+set(CONFIG_LV_BUILD_EXAMPLES OFF)
+add_subdirectory(lvgl)
 # ==== LVGL ====
+
+add_library(native_app_glue STATIC
+        ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED main.c render.h render.c types.h)
 
@@ -59,18 +46,3 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         log
         native_app_glue
         lvgl)
-
-# ==== LVGL DEMOS ====
-set(LV_ENABLE_DEMOS OFF)
-
-file(GLOB_RECURSE DEMO_SOURCES ${LVGL_ROOT_DIR}/demos/*.c)
-
-IF (LV_ENABLE_DEMOS)
-    add_library(lvgl_demos ${DEMO_SOURCES})
-    add_library(lvgl::demos ALIAS lvgl_demos)
-
-    target_include_directories(lvgl_demos SYSTEM PUBLIC ${LVGL_ROOT_DIR}/demos)
-    target_link_libraries(lvgl_demos PUBLIC lvgl)
-    target_link_libraries(${CMAKE_PROJECT_NAME} lvgl_demos)
-endif ()
-# ==== LVGL DEMOS ====
