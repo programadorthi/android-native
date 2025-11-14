@@ -1,12 +1,27 @@
 #include <android/log.h>
 #include <android_native_app_glue.h>
+
 #include "raylib.h"
 
-#define LOG_TAG "NativeApplication"
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#define HELLO "Hello Android"
+#define FONT_SIZE 80
 
-__attribute__((unused))
-void android_main(struct android_app* app)
+int main(void)
 {
-    LOGI( ">>>> Starting...\n" );
+    InitWindow(0, 0, HELLO);
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        BeginDrawing();
+        ClearBackground(WHITE);
+        int w = GetScreenWidth();
+        int h = GetScreenHeight();
+        int text_size = MeasureText(HELLO, FONT_SIZE);
+        int posX = (w / 2) - (text_size / 2);
+        DrawText(HELLO, posX, h / 2, FONT_SIZE, MAGENTA);
+        EndDrawing();
+    }
+
+    CloseWindow();
+    return 0;
 }
